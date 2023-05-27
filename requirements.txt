@@ -1,0 +1,7 @@
+pdbpp 
+backtrader 
+python.dotenv 
+numpy 
+pandas 
+mysql-connector-python 
+sqlalchemy
