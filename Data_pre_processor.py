@@ -2,27 +2,23 @@ from DB_Classes.Querry_Back_Testing import QuerryTradesDummyData
 from DB_Classes.Querry_Live_Trading_Logs import QuerryLogStrategyOutput
 from DB_Classes.Querry_Assets_OHLC_DB_Class import Querry_Assets_OHLC_from_DB
 
-# # Get BackTTesting Trades from DB
-# Back_Trades_Instance = QuerryTradesDummyData()
-# all_trades = Back_Trades_Instance.return_all_trades()
-# l = 0
+class PreProcessor:
+    def __init__(self):
+        self.back_trades_instance = QuerryTradesDummyData()
+        self.live_logs_instance = QuerryLogStrategyOutput()
+        self.price_data_instance = Querry_Assets_OHLC_from_DB()
+        
+    def get_all_trades(self):
+        return self.back_trades_instance.return_all_trades()
+    
+    def get_all_live_logs(self):
+        return self.live_logs_instance.return_all_log_strategy_output()
+    
+    def get_all_assets(self):
+        return self.price_data_instance.return_all_assets()
+    
+    def get_historical_ohlc(self, sample_dict):
+        return self.price_data_instance.return_historical_ohlc_from_db(sample_dict)
 
-# # Get LiveTrading Logs
-# Live_Logs_instance = QuerryLogStrategyOutput()
-# live_logs = Live_Logs_instance.return_all_log_strategy_output()
-# l = 0
 
-# Get Pricedata
-Price_Data_Instance = Querry_Assets_OHLC_from_DB()
-all_assets = Price_Data_Instance.return_all_assets()
-sample_dict = {
-            'ticker': 'XBTUSDC', 
-            'historical_data_req_body': None, 
-            'live_data_req_body': None, 
-            'first_available_datapoint': None, 
-            'historical_data_url': 'https://api.kraken.com/0/public/OHLC?pair=XBTUSDT&interval=', 
-            'live_data_url': 'https://api.kraken.com/0/public/Ticker?pair=XBTUSDT', 
-            'data_provider': 'Kraken',
-            'last_available_datapoint': None}
-ohlc = Price_Data_Instance.return_historical_ohlc_from_db(sample_dict)
-l = 0
+
