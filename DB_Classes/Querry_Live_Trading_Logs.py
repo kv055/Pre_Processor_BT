@@ -2,12 +2,12 @@ from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.orm.attributes import instance_dict
 from sqlalchemy.types import DateTime
 
-from sqalchemy_connect import SQL_Server
+from DB_Classes.sqalchemy_connect import SQL_Server
+
 db_name = 'Live_Trading_Logs'
 connection_instance = SQL_Server(db_name)
 Base = connection_instance.get_base()
 session = connection_instance.get_session()
-
 
 
 class LogStrategyOutput(Base):
