@@ -2,7 +2,8 @@ from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.orm.attributes import instance_dict
 from sqlalchemy.types import DateTime
 
-from sqalchemy_connect import SQL_Server
+from DB_Classes.sqalchemy_connect import SQL_Server
+
 db_name = 'Financial_Data'
 connection_instance = SQL_Server(db_name)
 Base = connection_instance.get_base()
@@ -22,7 +23,6 @@ class OHLC(Base):
     Time_Frame = Column(String(45), nullable=False)
 
 
-
 class Asset(Base):
     __tablename__ = 'Assets'
 
@@ -39,38 +39,40 @@ class Asset(Base):
 
 class Querry_Assets_OHLC_from_DB:
     def __init__(self) -> None:
-        db_name = 'Financial_Data'
+        pass
 
     def return_all_assets(self):
         assets = session.query(Asset).all()
         asset_dicts = [instance_dict(asset) for asset in assets]
         return asset_dicts
 
-    def return_historical_ohlc_from_db(self, asset_dict):
+    def return_historical_ohlc_dict_from_db(self, asset_dict):
         ticker = asset_dict['ticker']
         data_provider = asset_dict['data_provider']
         ohlc_results = session.query(OHLC).filter(
-            # OHLC.Data_Provider == data_provider
-            OHLC.Ticker == ticker
+            OHLC.Ticker == ticker,
+            OHLC.Data_Provider == data_provider
         ).all()
-        return ohlc_results
+        ohlc_dicts = [instance_dict(ohlc) for ohlc in ohlc_results]
+        return ohlc_dicts
+    
+    def return_historical_ohlc_list_from_db(self, asset_dict):
+        ticker = asset_dict['ticker']
+        data_provider = asset_dict['data_provider']
+        ohlc_results = session.query(OHLC).filter(
+            OHLC.Ticker == ticker,
+            OHLC.Data_Provider == data_provider
+        ).all()
+        ohlc_lists = [[
+            ohlc.Date,
+            ohlc.Open,
+            ohlc.High,
+            ohlc.Low,
+            ohlc.Close,
+            ohlc.Average,
+            ohlc.Data_Provider,
+            ohlc.Ticker,
+            ohlc.Time_Frame
+        ] for ohlc in ohlc_results]
+        return ohlc_lists
 
-    # def return_historical_average_price_from_db(self, asset_dict):
-    #     ticker = asset_dict['ticker']
-    #     data_provider = asset_dict['data_provider']
-    #     ohlc_results = session.query(OHLC).filter(
-    #         OHLC.data_provider == data_provider,
-    #         OHLC.ticker == ticker
-    #     ).all()
-
-    #     result_list = []
-    #     for row in ohlc_results:
-    #         average = (row.open + row.high + row.low + row.close) / 4
-    #         del row.open
-    #         del row.high
-    #         del row.low
-    #         del row.close
-    #         row.average_price = average
-    #         result_list.append(row)
-
-    #     return result_list
