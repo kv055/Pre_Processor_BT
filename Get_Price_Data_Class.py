@@ -17,13 +17,13 @@ class ImportData:
         self.querry = Querry_Assets_OHLC_from_DB()
 
     def Querry_ohlc_dict_from_DB(self, asset_dict):
-        self.querry.db_connection.cursor = self.querry.db_connection.connection.cursor(dictionary=True)
-        self.ohlc_dict = self.querry.return_historical_ohlc_from_db(asset_dict)
+        # self.querry.db_connection.cursor = self.querry.db_connection.connection.cursor(dictionary=True)
+        self.ohlc_dict = self.querry.return_historical_ohlc_dict_from_db(asset_dict)
 
     def Querry_ohlc_list_from_DB(self, asset_dict):
-        self.querry.db_connection.cursor = self.querry.db_connection.connection.cursor(named_tuple=True)
-        ohlc_tuple = self.querry.return_historical_ohlc_from_db(asset_dict)
-        self.ohlc_list = [list(tup) for tup in ohlc_tuple]
+        # self.querry.db_connection.cursor = self.querry.db_connection.connection.cursor(named_tuple=True)
+        self.ohlc_list = self.querry.return_historical_ohlc_list_from_db(asset_dict)
+        # self.ohlc_list = [list(tup) for tup in ohlc_tuple]
 
     def Querry_average_price_dict_from_DB(self, asset_dict):
         self.querry.db_connection.cursor = self.querry.db_connection.connection.cursor(dictionary=True)
@@ -128,11 +128,17 @@ class ImportData:
     def Create_ohlc_dataframe(self,asset_dict):
         self.Querry_ohlc_list_from_DB(asset_dict)
         self.ohlc_data_frame = pd.DataFrame(
-            self.ohlc_list,
-            columns=(
-                'TimeStamp','Open','High','Low','Close'
-            )
+            [row[:5] for row in self.ohlc_list],  # Select the first 5 elements of each row
+            columns=('TimeStamp', 'Open', 'High', 'Low', 'Close')
         )
+
+        # self.ohlc_data_frame = pd.DataFrame(
+        #     self.ohlc_list,
+        #     columns=(
+        #         'TimeStamp','Open','High','Low','Close'
+        #     )
+        # )
+        
         self.ohlc_data_frame.set_index("TimeStamp", inplace = True)
         self.ohlc_data_frame['Open'] = pd.to_numeric(self.ohlc_data_frame['Open'])
         self.ohlc_data_frame['High'] = pd.to_numeric(self.ohlc_data_frame['High'])
@@ -221,14 +227,3 @@ class ImportData:
     # def return_merge_ohlc_data_frames(self,list_of_asset_dicts):
     #     self.Merge_ohlc_data_frames(list_of_asset_dicts)
         # return self.merged_ohlc_data_frames
-
-
-
-# m = ImportData()
-# m.Create_average_price_CSV(
-#     {
-#         "data_provider": "Binance",
-#         "ticker": "BTCPAX",
-#         "candleSize": "1_Day"}
-# )
-# l = 0
