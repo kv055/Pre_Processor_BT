@@ -1,21 +1,10 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-
-import pandas as pd
-import datetime
-import os.path
-import sys
-
 import backtrader as bt
 import pandas as pd
 import backtrader.analyzers as btanalyzers
-from Data_pre_processor import PreProcessor
 from Backtrader_Strategy import SmaCross
 from Get_Price_Data_Class import ImportData
-
-# Create an instance of the component
-my_component = PreProcessor()
-all_assets = my_component.get_all_assets()
 
 ohlc_instance = ImportData()
 sample_dict = {
@@ -68,14 +57,9 @@ if __name__ == '__main__':
     par_list = [[
         x[1].params.pfast, 
         x[1].params.pslow,
-        x[1].analyzers.returns.get_analysis()['rnorm100'], 
-        # x[0].analyzers.drawdown.get_analysis()['max']['drawdown'],
-        # x[0].analyzers.sharpe.get_analysis()['sharperatio']
+        x[1].analyzers.returns.get_analysis()['rnorm100']
     ] for x in results]
 
-
-	
 par_df = pd.DataFrame(par_list, columns = ['length_fast', 'length_slow', 'return'])
-# , 'dd', 'sharpe'
 
 l = 0
