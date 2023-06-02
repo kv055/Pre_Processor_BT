@@ -1,133 +1,81 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
+import pandas as pd
 import datetime
 import os.path
 import sys
 
 import backtrader as bt
 import pandas as pd
+import backtrader.analyzers as btanalyzers
+from Data_pre_processor import PreProcessor
+from Backtrader_Strategy import SmaCross
+from Get_Price_Data_Class import ImportData
 
-# Create a Stratey
-class TestStrategy(bt.Strategy):
+# Create an instance of the component
+my_component = PreProcessor()
+all_assets = my_component.get_all_assets()
 
-    def log(self, txt, dt=None):
-        ''' Logging function fot this strategy'''
-        dt = dt or self.datas[0].datetime.date(0)
-        print('%s, %s' % (dt.isoformat(), txt))
+ohlc_instance = ImportData()
+sample_dict = {
+    'ticker': 'XBTUSDC',
+    'historical_data_req_body': None,
+    'live_data_req_body': None,
+    'first_available_datapoint': None,
+    'historical_data_url': 'https://api.kraken.com/0/public/OHLC?pair=XBTUSDT&interval=',
+    'live_data_url': 'https://api.kraken.com/0/public/Ticker?pair=XBTUSDT',
+    'data_provider': 'Kraken',
+    'last_available_datapoint': None
+}
+dataframe = ohlc_instance.return_ohlc_dataframe(sample_dict)
 
-    def __init__(self):
-        # Keep a reference to the "close" line in the data[0] dataseries
-        self.dataclose = self.datas[0].close
-
-        # To keep track of pending orders and buy price/commission
-        self.order = None
-        self.buyprice = None
-        self.buycomm = None
-
-    def notify_order(self, order):
-        if order.status in [order.Submitted, order.Accepted]:
-            # Buy/Sell order submitted/accepted to/by broker - Nothing to do
-            return
-
-        # Check if an order has been completed
-        # Attention: broker could reject order if not enough cash
-        if order.status in [order.Completed]:
-            if order.isbuy():
-                self.log(
-                    'BUY EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                    (order.executed.price,
-                     order.executed.value,
-                     order.executed.comm))
-
-                self.buyprice = order.executed.price
-                self.buycomm = order.executed.comm
-            else:  # Sell
-                self.log('SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' %
-                         (order.executed.price,
-                          order.executed.value,
-                          order.executed.comm))
-
-            self.bar_executed = len(self)
-
-        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
-            self.log('Order Canceled/Margin/Rejected')
-
-        self.order = None
-
-    def notify_trade(self, trade):
-        if not trade.isclosed:
-            return
-
-        self.log('OPERATION PROFIT, GROSS %.2f, NET %.2f' %
-                 (trade.pnl, trade.pnlcomm))
-
-    def next(self):
-        # Simply log the closing price of the series from the reference
-        # self.log('Close, %.2f' % self.dataclose[0])
-
-        # Check if an order is pending ... if yes, we cannot send a 2nd one
-        if self.order:
-            return
-
-        # Check if we are in the market
-        if not self.position:
-
-            # Not yet ... we MIGHT BUY if ...
-            if self.dataclose[0] < self.dataclose[-1]:
-                    # current close less than previous close
-
-                    if self.dataclose[-1] < self.dataclose[-2]:
-                        # previous close less than the previous close
-
-                        # BUY, BUY, BUY!!! (with default parameters)
-                        self.log('BUY CREATE, %.2f' % self.dataclose[0])
-
-                        # Keep track of the created order to avoid a 2nd order
-                        self.order = self.buy()
-
-        else:
-
-            # Already in the market ... we might sell
-            if len(self) >= (self.bar_executed + 5):
-                # SELL, SELL, SELL!!! (with all possible default parameters)
-                self.log('SELL CREATE, %.2f' % self.dataclose[0])
-
-                # Keep track of the created order to avoid a 2nd order
-                self.order = self.sell()
 
 if __name__ == '__main__':
     # Create a cerebro entity
     cerebro = bt.Cerebro()
 
     # Add a strategy
-    cerebro.addstrategy(TestStrategy)
+    cerebro.addstrategy(SmaCross)
 
-    # Set the data parameters
-    datapath = os.path.join(os.getcwd(), 'AAPL.csv')
-    fromdate = datetime.datetime(2015, 1, 2)
-    todate = datetime.datetime(2021, 12 ,31)
-
-    # Read the CSV file using pandas
-    dataframe = pd.read_csv(datapath, parse_dates=True, index_col=0)
-
-    # Create a data feed
-    data = bt.feeds.PandasData(dataname=dataframe, fromdate=fromdate, todate=todate)
+    # Pass it to the backtrader data feed and add it to cerebro
+    datafeed = bt.feeds.PandasData(dataname=dataframe)
 
     # Add the data feed to cerebro
-    cerebro.adddata(data)
+    cerebro.adddata(datafeed)
 
     # Set our desired cash start
     cerebro.broker.setcash(100000.0)
 
     # Set the commission - 0.1% ... divide by 100 to remove the %
-    cerebro.broker.setcommission(commission=0.001)
+    cerebro.broker.setcommission(commission=0.01)
 
     # Print out the starting conditions
     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
-    # Run over everything
-    cerebro.run()
+    # Optimize the strategy parameters
+    cerebro.optstrategy(
+        SmaCross,
+        pfast=range(5,25),  # Specify the range of values for pfast
+        pslow=range(10,50)  # Specify the range of values for pslow
+    )
 
-    # Print out the final result
-    print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
+    cerebro.addanalyzer(btanalyzers.Returns, _name = "returns")
+
+    # Run the optimization
+    results = cerebro.run()
+
+    par_list = [[
+        x[1].params.pfast, 
+        x[1].params.pslow,
+        x[1].analyzers.returns.get_analysis()['rnorm100'], 
+        # x[0].analyzers.drawdown.get_analysis()['max']['drawdown'],
+        # x[0].analyzers.sharpe.get_analysis()['sharperatio']
+    ] for x in results]
+
+
+	
+par_df = pd.DataFrame(par_list, columns = ['length_fast', 'length_slow', 'return'])
+# , 'dd', 'sharpe'
+
+l = 0
