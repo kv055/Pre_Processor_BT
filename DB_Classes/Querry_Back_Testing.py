@@ -42,26 +42,7 @@ session = connection_instance.get_session()
 
 
 class QuerryTradesDummyData:
-    # def return_all_trades(self):
-    #     index_records = session.query(Index).all()
 
-    #     trades_list = []
-
-    #     for index in index_records:
-    #         ticker = index.ticker
-    #         data_provider = index.data_provider
-
-    #         # Fetch the trades with matching ticker and data_provider
-    #         trades = session.query(Trades).filter_by(Ticker=ticker, Data_Provider=data_provider).all()
-    #         trades_tuples = [(trade.Ticker, trade.Data_Provider, trade.Open, trade.Direction, trade.Asset_Price, trade.Position_Size, trade.Leverage, trade.Signal, trade.Current_Asset_Balance, trade.Current_Cash_Balance, trade.Prev_Asset_Balance, trade.Prev_Cash_Balance, trade.Trade_From, trade.Trade_To, trade.Closed) for trade in trades]  # Convert trades to tuples manually
-
-    #         trades_list.append({
-    #             'data_provider': data_provider,
-    #             'ticker': ticker,
-    #             'trades': trades_tuples
-    #         })
-
-    #     return trades_list
     def return_all_trades(self):
         index_records = session.query(Index).all()
 
@@ -84,4 +65,17 @@ class QuerryTradesDummyData:
         return trades_list
 
 
+    def return_trades_for_asset(self,asset):
+       
+        ticker = asset['ticker']
+        data_provider = asset['data_provider']
 
+        # Fetch the trades with matching ticker and data_provider
+        trades = session.query(Trades).filter_by(Ticker=ticker, Data_Provider=data_provider).all()
+        trades_dicts = [trade.__dict__ for trade in trades]  # Convert trades to dictionaries
+
+        return {
+            'data_provider': data_provider,
+            'ticker': ticker,
+            'trades': trades_dicts
+        }
