@@ -161,3 +161,4 @@ cython_debug/
 
 # Source code from dependencies
 vectorbt-master
+MA_Crossings.py
