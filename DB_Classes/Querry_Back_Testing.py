@@ -26,7 +26,7 @@ class Trades(Base):
     Asset_Price = Column(Float)
     Position_Size = Column(Float)
     Leverage = Column(Integer)
-    Signal = Column(String(255))
+    Trade_Signal = Column(String(255))
     Current_Asset_Balance = Column(Float)
     Current_Cash_Balance = Column(Float)
     Prev_Asset_Balance = Column(Float)
