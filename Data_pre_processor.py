@@ -1,12 +1,7 @@
-from DB_Classes.Querry_Back_Testing import QuerryTradesDummyData
-from DB_Classes.Querry_Live_Trading_Logs import QuerryLogStrategyOutput
-from DB_Classes.Querry_Assets_OHLC_DB_Class import Querry_Assets_OHLC_from_DB
 
 class PreProcessor:
     def __init__(self):
-        self.back_trades_instance = QuerryTradesDummyData()
-        self.live_logs_instance = QuerryLogStrategyOutput()
-        self.price_data_instance = Querry_Assets_OHLC_from_DB()
+        pass
         
     def get_all_trades(self):
         return self.back_trades_instance.return_all_trades()

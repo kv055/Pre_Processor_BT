@@ -1,0 +1,32 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pdbpp = "*"
+backtrader = "*"
+"python.dotenv" = "*"
+numpy = "*"
+pandas = "*"
+mysql-connector-python = "*"
+sqlalchemy = "*"
+plotly.graph_objects = "*"
+# Update the numba version constraint
+numba = "*"
+dill = "*"
+tqdm = "*"
+dateparser = "*"
+imageio = "*"
+scikit-learn = "*"
+schedule = "*"
+requests = "*"
+pytz = "*"
+typing-extensions = {version = ">=3.7.4", markers = "python_version < '3.8'"}
+mypy-extensions = "*"
+yfinance = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.8"
