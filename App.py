@@ -1,6 +1,6 @@
 import sys
 # Add the folder path containing the library to the sys.path list
-sys.path.append('/workspaces/Pre_Procesor_BT/vectorbt-master')
+sys.path.append('/home/hackerboi/Dokumente/Abelian_Code/Repositories/Pre_Procesor_BT/vectorbt-master')
 
 from Data_pre_processor import PreProcessor
 # Now you can import the library as usual
@@ -11,7 +11,7 @@ import vectorbt as vbt
 
 def Backtrading(test_trades):
     Test_data_instance = PreProcessor()
-    test_ohlc_frame = Test_data_instance.get_historical_ohlc()
+    test_ohlc_frame = Test_data_instance.datastructure_VectorBT(test_trades)
     
     for position in test_trades['trades']:
         position_open = position['Open'].strftime("%Y-%m-%d")
