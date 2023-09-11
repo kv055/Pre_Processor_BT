@@ -1,12 +1,5 @@
-import sys
-# Add the folder path containing the library to the sys.path list
-sys.path.append('/home/hackerboi/Dokumente/Abelian_Code/Repositories/Pre_Procesor_BT/vectorbt-master')
-
 from Data_pre_processor import PreProcessor
-# Now you can import the library as usual
-import vectorbt as vbt
-
-
+from vectorbt_master import vbt
 
 
 def Backtrading(test_trades):
